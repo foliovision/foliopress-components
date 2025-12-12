@@ -43,6 +43,38 @@ function foliopress_confirm( message, yes_callback, no_callback ) {
 		modal.remove();
 	});
 
+	// Handle keyboard events
+	var handleKeyDown = function( event ) {
+		// Check if modal is still in the DOM
+		if ( ! document.body.contains( modal ) ) {
+			return;
+		}
+
+		if ( event.key === 'Enter' ) {
+			event.preventDefault();
+			yes_callback();
+			modal.remove();
+		} else if ( event.key === 'Escape' ) {
+			event.preventDefault();
+			if ( no_callback ) {
+				no_callback();
+			}
+			modal.remove();
+		}
+	};
+
+	document.addEventListener('keydown', handleKeyDown);
+
+	// Clean up event listener when modal is removed
+	var originalRemove = modal.remove.bind(modal);
+	modal.remove = function() {
+		document.removeEventListener('keydown', handleKeyDown);
+		originalRemove();
+	};
+
 	// Add the modal to the page
 	document.body.appendChild(modal);
+
+	// Focus the modal dialog for keyboard accessibility
+	modal.querySelector('[role="dialog"]').focus();
 }
